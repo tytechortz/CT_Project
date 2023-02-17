@@ -2,6 +2,7 @@ from dash import Dash, html, dcc, Input, Output, State
 import dash_bootstrap_components as dbc
 import geopandas as gpd
 import plotly.express as px
+import pandas as pd
 
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.DARKLY])
@@ -18,6 +19,9 @@ gdf = gdf.to_crs("epsg:4326")
 gdf = gdf.set_geometry('geometry')
 
 gdf = gdf.drop(gdf.columns[[1,3,4,5,6,7,8,9,10,11,12,13,14,15]], axis=1)
+
+df = pd.read_csv('Arapahoe_CT_stats.csv')
+print(df)
 
 def blank_fig(height):
     """
