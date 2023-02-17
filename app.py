@@ -18,10 +18,17 @@ gdf = gpd.read_file('/Users/jamesswank/Python_projects/covid_heatmap/Census_Trac
 gdf = gdf.to_crs("epsg:4326")
 gdf = gdf.set_geometry('geometry')
 
-gdf = gdf.drop(gdf.columns[[1,3,4,5,6,7,8,9,10,11,12,13,14,15]], axis=1)
+gdf = gdf.drop(gdf.columns[[1,3,4,5,6,7,8,9,10,11,12,14,15]], axis=1)
+
+gdf['GEOID20'] = gdf['GEOID20'].str[1:]
+gdf.rename(columns={'GEOID20':'FIPS'}, inplace=True)
 
 df = pd.read_csv('Arapahoe_CT_stats.csv')
+df['FIPS'] = df['FIPS'].astype(str)
 print(df)
+
+# tgdf = gdf.merge(df, on='FIPS')
+# print(tgdf)
 
 def blank_fig(height):
     """
