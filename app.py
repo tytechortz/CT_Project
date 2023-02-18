@@ -3,6 +3,7 @@ import dash_bootstrap_components as dbc
 import geopandas as gpd
 import plotly.express as px
 import pandas as pd
+import dash_ag_grid as dag
 
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.DARKLY])
@@ -14,24 +15,49 @@ header = html.Div("Arapahoe Census Tract Data", className="h2 p-2 text-white bg-
 template = {"layout": {"paper_bgcolor": bgcolor, "plot_bgcolor": bgcolor}}
 
 
-gdf = gpd.read_file('/Users/jamesswank/Python_projects/covid_heatmap/Census_Tracts_2020_SHAPE_WGS/Census_Tracts_2020_WGS.shp')
-gdf = gdf.to_crs("epsg:4326")
-gdf = gdf.set_geometry('geometry')
-gdf = gdf.drop(gdf.columns[[0,1,2,4,5,6,7,8,9,10,14,15]], axis=1)
-gdf['ALAND20'] = gdf['ALAND20'] / 1000000
-gdf['Pop_Density'] = gdf['P0010001'] / gdf['ALAND20'] 
-print(gdf.columns)
-
-# gdf = gpd.read_file('tl_2020_08_tract/tl_2020_08_tract.shp')
-# gdf = gdf.loc[gdf['COUNTYFP'] == '005']
+# gdf = gpd.read_file('/Users/jamesswank/Python_projects/covid_heatmap/Census_Tracts_2020_SHAPE_WGS/Census_Tracts_2020_WGS.shp')
+# gdf = gdf.to_crs("epsg:4326")
+# gdf = gdf.set_geometry('geometry')
+# gdf = gdf.drop(gdf.columns[[0,1,2,4,5,6,7,8,9,10,14,15]], axis=1)
 # gdf['ALAND20'] = gdf['ALAND20'] / 1000000
-# gdf.GEOID = gdf.GEOID.str[1:]
+# gdf['Pop_Density'] = gdf['P0010001'] / gdf['ALAND20'] 
+# print(gdf.columns)
 
-gdf.rename(columns={'GEOID':'FIPS'}, inplace=True)
+gdf = gpd.read_file('ArapahoeCT.shp')
 
-# df = pd.read_csv('Arapahoe_CT_stats.csv')
+
+
+df = pd.read_csv('SNAP_2021.csv')
 # df['FIPS'] = df['FIPS'].astype(str)
+# tgdf = gdf.merge(df, on='FIPS', how='left')
 
+columnDefs = [
+    {
+        'headerName': 'Label',
+        'field': 'Label'
+    },
+]
+
+defaultColDef = {
+    "filter": True,
+    "resizable": True,
+    "sortable": True,
+    "editable": False,
+    "floatingFilter": True,
+    "minWidth": 125
+}
+
+table = dag.AgGrid(
+    id='ct-grid',
+    className="ag-theme-alpine-dark",
+    columnDefs=columnDefs,
+    rowData=df.to_dict("records"),
+    columnSize="sizeToFit",
+    defaultColDef=defaultColDef,
+    # cellStyle=cellStyle,
+    # dangerously_allow_code=True,
+    dashGridOptions={"undoRedoCellEditing": True, "rowSelection": "single"},
+)
 
 # tgdf = gdf.merge(df, on='FIPS', how='left')
 # print(tgdf)
@@ -56,6 +82,7 @@ app.layout = dbc.Container(
     [
         header,
         dbc.Row(dcc.Graph(id='ct-map', figure=blank_fig(500))),
+        dbc.Row(dbc.Col(table, className="py-4")),
         dcc.Store(id='processed-data', storage_type='session'),
     ],
 )
@@ -69,7 +96,7 @@ def get_figure(processed_data):
 
     fig = px.choropleth_mapbox(gdf, 
                                 geojson=gdf.geometry, 
-                                color="Pop_Density",                               
+                                color="AWATER",                               
                                 locations=gdf.index, 
                                 # featureidkey="properties.TRACTCE20",
                                 opacity=0.5)
