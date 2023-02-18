@@ -17,21 +17,23 @@ template = {"layout": {"paper_bgcolor": bgcolor, "plot_bgcolor": bgcolor}}
 gdf = gpd.read_file('/Users/jamesswank/Python_projects/covid_heatmap/Census_Tracts_2020_SHAPE_WGS/Census_Tracts_2020_WGS.shp')
 gdf = gdf.to_crs("epsg:4326")
 gdf = gdf.set_geometry('geometry')
+gdf = gdf.drop(gdf.columns[[0,1,2,4,5,6,7,8,9,10,14,15]], axis=1)
+gdf['ALAND20'] = gdf['ALAND20'] / 1000000
+gdf['Pop_Density'] = gdf['P0010001'] / gdf['ALAND20'] 
+print(gdf.columns)
 
-gdf2 = gpd.read_file('tl_2020_08_tract/tl_2020_08_tract.shp')
-gdf2 = gdf2.loc[gdf2['COUNTYFP'] == '005']
-gdf2['AREA'] = gdf2['ALAND'] / 1000000
+# gdf = gpd.read_file('tl_2020_08_tract/tl_2020_08_tract.shp')
+# gdf = gdf.loc[gdf['COUNTYFP'] == '005']
+# gdf['ALAND20'] = gdf['ALAND20'] / 1000000
+# gdf.GEOID = gdf.GEOID.str[1:]
 
-gdf = gdf.drop(gdf.columns[[1,3,4,5,6,7,8,9,10,11,12,14,15]], axis=1)
+gdf.rename(columns={'GEOID':'FIPS'}, inplace=True)
 
-gdf['GEOID20'] = gdf['GEOID20'].str[1:]
-gdf.rename(columns={'GEOID20':'FIPS'}, inplace=True)
-
-df = pd.read_csv('Arapahoe_CT_stats.csv')
-df['FIPS'] = df['FIPS'].astype(str)
+# df = pd.read_csv('Arapahoe_CT_stats.csv')
+# df['FIPS'] = df['FIPS'].astype(str)
 
 
-tgdf = gdf.merge(df, on='FIPS')
+# tgdf = gdf.merge(df, on='FIPS', how='left')
 # print(tgdf)
 
 def blank_fig(height):
@@ -65,10 +67,10 @@ app.layout = dbc.Container(
 def get_figure(processed_data):
     
 
-    fig = px.choropleth_mapbox(gdf2, 
-                                geojson=gdf2.geometry, 
-                                color="AREA",                               
-                                locations=gdf2.index, 
+    fig = px.choropleth_mapbox(gdf, 
+                                geojson=gdf.geometry, 
+                                color="Pop_Density",                               
+                                locations=gdf.index, 
                                 # featureidkey="properties.TRACTCE20",
                                 opacity=0.5)
 
