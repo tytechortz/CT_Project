@@ -18,6 +18,9 @@ gdf = gpd.read_file('/Users/jamesswank/Python_projects/covid_heatmap/Census_Trac
 gdf = gdf.to_crs("epsg:4326")
 gdf = gdf.set_geometry('geometry')
 
+gdf2 = gpd.read_file('tl_2020_08_tract/tl_2020_08_tract.shp')
+gdf2 = gdf2.loc[gdf2['COUNTYFP'] == '005']
+
 gdf = gdf.drop(gdf.columns[[1,3,4,5,6,7,8,9,10,11,12,14,15]], axis=1)
 
 gdf['GEOID20'] = gdf['GEOID20'].str[1:]
@@ -25,9 +28,9 @@ gdf.rename(columns={'GEOID20':'FIPS'}, inplace=True)
 
 df = pd.read_csv('Arapahoe_CT_stats.csv')
 df['FIPS'] = df['FIPS'].astype(str)
-print(df)
 
-# tgdf = gdf.merge(df, on='FIPS')
+
+tgdf = gdf.merge(df, on='FIPS')
 # print(tgdf)
 
 def blank_fig(height):
@@ -61,10 +64,10 @@ app.layout = dbc.Container(
 def get_figure(processed_data):
     
 
-    fig = px.choropleth_mapbox(gdf, 
-                                geojson=gdf.geometry, 
-                                color="TRACTCE20",                               
-                                locations=gdf.index, 
+    fig = px.choropleth_mapbox(gdf2, 
+                                geojson=gdf2.geometry, 
+                                color="ALAND",                               
+                                locations=gdf2.index, 
                                 # featureidkey="properties.TRACTCE20",
                                 opacity=0.5)
 
