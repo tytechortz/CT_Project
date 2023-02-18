@@ -20,6 +20,7 @@ gdf = gdf.set_geometry('geometry')
 
 gdf2 = gpd.read_file('tl_2020_08_tract/tl_2020_08_tract.shp')
 gdf2 = gdf2.loc[gdf2['COUNTYFP'] == '005']
+gdf2['AREA'] = gdf2['ALAND'] / 1000000
 
 gdf = gdf.drop(gdf.columns[[1,3,4,5,6,7,8,9,10,11,12,14,15]], axis=1)
 
@@ -66,7 +67,7 @@ def get_figure(processed_data):
 
     fig = px.choropleth_mapbox(gdf2, 
                                 geojson=gdf2.geometry, 
-                                color="ALAND",                               
+                                color="AREA",                               
                                 locations=gdf2.index, 
                                 # featureidkey="properties.TRACTCE20",
                                 opacity=0.5)
