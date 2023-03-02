@@ -82,22 +82,38 @@ app.layout = dbc.Container(
     [
         header,
         dbc.Row(dcc.Graph(id='ct-map', figure=blank_fig(500))),
+        dbc.Row(dcc.RadioItems(['SNAP', 'Income', 'Households'], inline=True)),
         dbc.Row(dbc.Col(table, className="py-4")),
         dcc.Store(id='processed-data', storage_type='session'),
     ],
 )
 
+
+
 @app.callback(
     Output('ct-map', 'figure'),
-    Input('processed-data', 'data')
+    Input('ct-grid', 'selectionChanged')
 )
-def get_figure(processed_data):
+def get_figure(selected_row):
+    sel_dict = selected_row[0]
+    del sel_dict['Label']
+    # print(sel_dict)
+    df2 = pd.DataFrame.from_dict(sel_dict, orient='index', columns=['Count'])
+    df2 = df2.iloc[1: , :]
+    df2.index.names = ['FIPS']
+    tgdf = gdf.merge(df2, on='FIPS')
+    tgdf['Count'] = tgdf['Count'].str.replace(",", "")
+    tgdf.fillna(0,inplace=True)
+    tgdf['Count'] = (tgdf['Count'].astype(int))
+    tgdf = tgdf.set_index('FIPS')
+    print(tgdf)
+
     
 
-    fig = px.choropleth_mapbox(gdf, 
-                                geojson=gdf.geometry, 
-                                color="AWATER",                               
-                                locations=gdf.index, 
+    fig = px.choropleth_mapbox(tgdf, 
+                                geojson=tgdf.geometry, 
+                                color="Count",                               
+                                locations=tgdf.index, 
                                 # featureidkey="properties.TRACTCE20",
                                 opacity=0.5)
 
