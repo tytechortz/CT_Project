@@ -82,13 +82,23 @@ app.layout = dbc.Container(
     [
         header,
         dbc.Row(dcc.Graph(id='ct-map', figure=blank_fig(500))),
-        dbc.Row(dcc.RadioItems(['SNAP', 'Income', 'Households'], inline=True)),
+        dbc.Row(dcc.RadioItems(
+                id='radio',
+                options=['SNAP', 'Income', 'Households'], inline=True,
+            ),
+        ),
         dbc.Row(dbc.Col(table, className="py-4")),
         dcc.Store(id='processed-data', storage_type='session'),
+        dcc.Store(id='household-count-data', storage_type='session'),
     ],
 )
 
-
+@app.callback(
+    Output('household-count-data', 'data'),
+    Input('radio', 'value'),
+)
+def get_data(radio):
+    return print(radio)
 
 @app.callback(
     Output('ct-map', 'figure'),
